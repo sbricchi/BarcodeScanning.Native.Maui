@@ -45,8 +45,16 @@ namespace BarcodeScanning.Test
         {
             _drawable.barcodeResults = e.BarcodeResults;
             Graphics.Invalidate();
+
+            if (e.BarcodeResults.Length > 0)
+                DisplayAlert("Listo",
+                    $"Length {e.BarcodeResults.Length}\n" +
+                    $"DisplayValue {e.BarcodeResults[0].DisplayValue}\n" +
+                    $"RawValue {e.BarcodeResults[0].RawValue}\n" +
+                    $"BarcodeFormat {e.BarcodeResults[0].BarcodeFormat}\n" +
+                    $"BarcodeType {e.BarcodeResults[0].BarcodeType}\n", "OK");
         }
-        
+
         private async void BackButton_Clicked(object sender, EventArgs e)
         {
             await Shell.Current.GoToAsync("..");
@@ -87,7 +95,7 @@ namespace BarcodeScanning.Test
         private void Quality_SelectedIndexChanged(object sender, EventArgs e)
         {
             var picker = (Picker)sender;
-            if(picker.SelectedIndex > -1 && picker.SelectedIndex < 5)
+            if (picker.SelectedIndex > -1 && picker.SelectedIndex < 5)
                 Barcode.CaptureQuality = (CaptureQuality)picker.SelectedIndex;
         }
 
