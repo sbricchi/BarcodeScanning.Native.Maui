@@ -18,7 +18,7 @@ internal class BarcodeAnalyzer : AVCaptureVideoDataOutputSampleBufferDelegate
         _barcodeView = barcodeView;
         _cameraView = cameraView;
 
-        _barcodeResults = [];
+        _barcodeResults = new HashSet<BarcodeResult>();
         _sequenceRequestHandler = new();
     }
 
@@ -42,7 +42,7 @@ internal class BarcodeAnalyzer : AVCaptureVideoDataOutputSampleBufferDelegate
             if (sampleBuffer is null || _cameraView.PauseScanning)
                 return;
 
-            _sequenceRequestHandler.Perform([_barcodeRequest], sampleBuffer, out _);
+            _sequenceRequestHandler.Perform(new VNRequest[] { _barcodeRequest }, sampleBuffer, out _);
 
             if (_cameraView.AimMode)
             {

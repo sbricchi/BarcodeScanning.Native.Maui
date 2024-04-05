@@ -23,14 +23,15 @@ public static partial class Methods
     {
         if (image is null)
             return null;
-        
+
         VNBarcodeObservation[] observations = null;
-        using var barcodeRequest = new VNDetectBarcodesRequest((request, error) => {
+        using var barcodeRequest = new VNDetectBarcodesRequest((request, error) =>
+        {
             if (error is null)
                 observations = request.GetResults<VNBarcodeObservation>();
         });
         using var handler = new VNImageRequestHandler(image.CGImage, new NSDictionary());
-        await Task.Run(() => handler.Perform([barcodeRequest], out _));
+        await Task.Run(() => handler.Perform(new VNRequest[] { barcodeRequest }, out _));
         var barcodeResults = new HashSet<BarcodeResult>();
         ProcessBarcodeResult(observations, barcodeResults);
         return barcodeResults;
@@ -40,7 +41,7 @@ public static partial class Methods
     {
         if (inputResults is null || inputResults.Length == 0)
             return;
-        
+
         foreach (var barcode in inputResults)
         {
             outputResults.Add(new BarcodeResult()
@@ -50,7 +51,7 @@ public static partial class Methods
                 DisplayValue = barcode.PayloadStringValue,
                 RawValue = barcode.PayloadStringValue,
                 RawBytes = GetRawBytes(barcode) ?? Encoding.ASCII.GetBytes(barcode.PayloadStringValue),
-                BoundingBox =  previewLayer?.MapToLayerCoordinates(InvertY(barcode.BoundingBox)).ToRectangle() ?? barcode.BoundingBox.ToRectangle()
+                BoundingBox = previewLayer?.MapToLayerCoordinates(InvertY(barcode.BoundingBox)).ToRectangle() ?? barcode.BoundingBox.ToRectangle()
             });
         };
     }

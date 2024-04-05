@@ -23,7 +23,7 @@ internal class BarcodeAnalyzer : Java.Lang.Object, ImageAnalysis.IAnalyzer
         _cameraView = cameraView;
         _barcodeView = barcodeView;
         
-        _barcodeResults = [];
+        _barcodeResults = new HashSet<BarcodeResult>();
     }
 
     public async void Analyze(IImageProxy proxy)

@@ -272,7 +272,7 @@ public partial class CameraView : View
 
     public CameraView()
     {
-        _pooledResults = [];
+        _pooledResults = new HashSet<BarcodeResult>();
         _poolingTimer = new()
         {
             AutoReset = false
@@ -335,9 +335,9 @@ public partial class CameraView : View
 
         BarcodeResult[] results;
         if (barcodeResults.Count == 0)
-            results = [];
+            results = new BarcodeResult[] { };
         else
-            results = [.. barcodeResults];
+            results = barcodeResults.ToArray();
 
         MainThread.BeginInvokeOnMainThread(() =>
         {

@@ -2,5 +2,5 @@
 
 public class OnDetectionFinishedEventArg : EventArgs
 {
-    public BarcodeResult[] BarcodeResults { get; set; } = [];
+    public BarcodeResult[] BarcodeResults { get; set; } = new BarcodeResult[] { };
 }
