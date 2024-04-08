@@ -34,7 +34,7 @@ internal class CameraManager : IDisposable
     private readonly RelativeLayout _relativeLayout;
     private readonly ZoomStateObserver _zoomStateObserver;
 
-    private readonly HashSet<BarcodeResult> _barcodeResults = [];
+    private readonly HashSet<BarcodeResult> _barcodeResults = new();
     private const int aimRadius = 25;
     private bool _cameraRunning = false;
 

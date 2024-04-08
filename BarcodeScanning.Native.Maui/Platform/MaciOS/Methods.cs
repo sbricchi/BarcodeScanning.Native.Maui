@@ -59,7 +59,7 @@ public static partial class Methods
     internal static VNBarcodeSymbology[] SelectedSymbologies(BarcodeFormats barcodeFormats)
     {
         if (barcodeFormats.HasFlag(BarcodeFormats.All))
-            return [];
+            return new VNBarcodeSymbology[] { };
 
         var symbologiesList = new List<VNBarcodeSymbology>();
 
@@ -111,7 +111,7 @@ public static partial class Methods
         if (barcodeFormats.HasFlag(BarcodeFormats.Upce))
             symbologiesList.Add(VNBarcodeSymbology.Upce);
 
-        return [.. symbologiesList];
+        return symbologiesList.ToArray();
     }
 
     private static BarcodeFormats ConvertFromIOSFormats(VNBarcodeSymbology symbology)

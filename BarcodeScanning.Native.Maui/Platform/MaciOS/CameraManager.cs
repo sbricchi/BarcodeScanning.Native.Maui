@@ -28,7 +28,7 @@ internal class CameraManager : IDisposable
     private readonly UITapGestureRecognizer _uITapGestureRecognizer;
     private readonly VNDetectBarcodesRequest _detectBarcodesRequest;
 
-    private readonly HashSet<BarcodeResult> _barcodeResults = [];
+    private readonly HashSet<BarcodeResult> _barcodeResults = new();
     private readonly object _syncLock = new();
     private readonly object _configLock = new();
     private const int aimRadius = 8;
@@ -36,17 +36,17 @@ internal class CameraManager : IDisposable
     internal CameraManager(CameraView cameraView)
     {
         _cameraView = cameraView;
-        
+
         _captureSession = new AVCaptureSession();
         _sequenceRequestHandler = new VNSequenceRequestHandler();
-        _detectBarcodesRequest = new VNDetectBarcodesRequest((request, error) => 
+        _detectBarcodesRequest = new VNDetectBarcodesRequest((request, error) =>
         {
             if (error is null)
                 Methods.ProcessBarcodeResult(request.GetResults<VNBarcodeObservation>(), _barcodeResults, _previewLayer);
         });
 
         _uITapGestureRecognizer = new UITapGestureRecognizer(FocusOnTap);
-        _subjectAreaChangedNotificaion = NSNotificationCenter.DefaultCenter.AddObserver(AVCaptureDevice.SubjectAreaDidChangeNotification, (n) => 
+        _subjectAreaChangedNotificaion = NSNotificationCenter.DefaultCenter.AddObserver(AVCaptureDevice.SubjectAreaDidChangeNotification, (n) =>
         {
             if (n.Name == AVCaptureDevice.SubjectAreaDidChangeNotification)
                 ResetFocus();
@@ -75,12 +75,12 @@ internal class CameraManager : IDisposable
         {
             if (_captureSession.Running)
                 _captureSession.StopRunning();
-            
+
             if (_captureSession.Inputs.Length == 0)
                 UpdateCamera();
             if (_captureSession.SessionPreset is null)
                 UpdateResolution();
-            
+
             UpdateOutput();
             UpdateAnalyzer();
             UpdateTorch();
@@ -166,7 +166,7 @@ internal class CameraManager : IDisposable
                 if (_captureDevice is not null)
                 {
                     _captureInput = new AVCaptureDeviceInput(_captureDevice, out _);
-                    
+
                     if (_captureSession.CanAddInput(_captureInput))
                         _captureSession.AddInput(_captureInput);
                 }
@@ -186,15 +186,15 @@ internal class CameraManager : IDisposable
         if (_captureDevice is not null && _captureDevice.HasTorch && _captureDevice.TorchAvailable)
         {
             if (_cameraView?.TorchOn ?? false)
-                CaptureDeviceLock(() => 
+                CaptureDeviceLock(() =>
                 {
-                    if(_captureDevice.IsTorchModeSupported(AVCaptureTorchMode.On))
+                    if (_captureDevice.IsTorchModeSupported(AVCaptureTorchMode.On))
                         _captureDevice.TorchMode = AVCaptureTorchMode.On;
                 });
             else
                 CaptureDeviceLock(() =>
                 {
-                    if(_captureDevice.IsTorchModeSupported(AVCaptureTorchMode.Off))
+                    if (_captureDevice.IsTorchModeSupported(AVCaptureTorchMode.Off))
                         _captureDevice.TorchMode = AVCaptureTorchMode.Off;
                 });
         }
@@ -214,7 +214,7 @@ internal class CameraManager : IDisposable
             factor = minValue;
         if (factor > maxValue)
             factor = maxValue;
-        
+
         if (factor > 0 && _captureDevice is not null)
             CaptureDeviceLock(() => _captureDevice.VideoZoomFactor = factor);
 
@@ -237,7 +237,7 @@ internal class CameraManager : IDisposable
             _shapeLayer?.RemoveFromSuperLayer();
     }
 
-    internal void HandleTapToFocus() {}
+    internal void HandleTapToFocus() { }
 
     internal void PerformBarcodeDetection(CMSampleBuffer sampleBuffer)
     {
@@ -245,7 +245,7 @@ internal class CameraManager : IDisposable
             return;
 
         _barcodeResults.Clear();
-        _sequenceRequestHandler?.Perform([_detectBarcodesRequest], sampleBuffer, out _);
+        _sequenceRequestHandler?.Perform(new VNRequest[] { _detectBarcodesRequest }, sampleBuffer, out _);
 
         if (_cameraView.AimMode)
         {
@@ -274,7 +274,7 @@ internal class CameraManager : IDisposable
 
     private void FocusOnTap()
     {
-        if (_cameraView?.TapToFocusEnabled ?? false && _captureDevice is not null  && _captureDevice.FocusPointOfInterestSupported)
+        if (_cameraView?.TapToFocusEnabled ?? false && _captureDevice is not null && _captureDevice.FocusPointOfInterestSupported)
         {
             CaptureDeviceLock(() =>
             {
@@ -289,13 +289,13 @@ internal class CameraManager : IDisposable
     {
         if (_captureDevice is not null)
         {
-            CaptureDeviceLock(() => 
+            CaptureDeviceLock(() =>
             {
                 if (_captureDevice.IsFocusModeSupported(AVCaptureFocusMode.ContinuousAutoFocus))
                     _captureDevice.FocusMode = AVCaptureFocusMode.ContinuousAutoFocus;
                 else
                     _captureDevice.FocusMode = AVCaptureFocusMode.AutoFocus;
-                
+
                 _captureDevice.SubjectAreaChangeMonitoringEnabled = false;
             });
         }
@@ -321,11 +321,11 @@ internal class CameraManager : IDisposable
                 {
                     AlwaysDiscardsLateVideoFrames = true
                 };
-                
+
                 _barcodeAnalyzer?.Dispose();
                 _barcodeAnalyzer = new BarcodeAnalyzer(this);
                 _videoDataOutput.SetSampleBufferDelegate(_barcodeAnalyzer, DispatchQueue.MainQueue);
-                
+
                 if (_captureSession.CanAddOutput(_videoDataOutput))
                     _captureSession.AddOutput(_videoDataOutput);
 
@@ -336,7 +336,7 @@ internal class CameraManager : IDisposable
 
     private void CaptureDeviceLock(Action handler)
     {
-        MainThread.BeginInvokeOnMainThread(() => 
+        MainThread.BeginInvokeOnMainThread(() =>
         {
             lock (_configLock)
             {
@@ -347,7 +347,7 @@ internal class CameraManager : IDisposable
                         handler();
                     }
                     catch (Exception)
-                    {      
+                    {
                     }
                     finally
                     {
@@ -397,7 +397,7 @@ internal class CameraManager : IDisposable
                 NSNotificationCenter.DefaultCenter.RemoveObserver(_subjectAreaChangedNotificaion);
             if (_uITapGestureRecognizer is not null)
                 _barcodeView?.RemoveGestureRecognizer(_uITapGestureRecognizer);
-            
+
             _previewLayer?.RemoveFromSuperLayer();
             _shapeLayer?.RemoveFromSuperLayer();
 
